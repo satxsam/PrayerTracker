@@ -20,12 +20,19 @@ A full-stack web application for collecting and tracking prayer requests, built 
 - SQLAlchemy - SQL toolkit and ORM
 - Uvicorn - ASGI server
 - uv - Python package manager
+- Docker - Containerization
 
 ### Frontend
 - React 18
 - TypeScript
 - Vite - Build tool and dev server
 - Axios - HTTP client
+- Nginx - Production web server
+
+### Deployment
+- Docker & Docker Compose
+- Google Cloud Run
+- Cloud SQL (optional)
 
 ## Project Structure
 
@@ -55,10 +62,20 @@ PrayerTracker/
 
 ### Prerequisites
 
+**For Local Development:**
 - Python 3.11 or higher
 - Node.js 18 or higher
 - uv (Python package manager) - [Installation](https://github.com/astral-sh/uv)
 - npm or yarn
+
+**For Docker Deployment:**
+- Docker 20.10+
+- Docker Compose 2.0+
+
+**For Cloud Run Deployment:**
+- Google Cloud SDK (gcloud CLI)
+- Docker
+- Google Cloud Project with billing enabled
 
 ### Backend Setup
 
@@ -115,6 +132,67 @@ PrayerTracker/
    ```
 
    The application will be available at `http://localhost:5173`
+
+## Docker Deployment
+
+### Quick Start with Docker Compose
+
+For local development with Docker:
+
+```bash
+# Development mode (with hot reload)
+docker-compose -f docker-compose.dev.yml up
+
+# Production mode (with PostgreSQL)
+docker-compose up -d
+```
+
+Access the application:
+- **Backend API**: http://localhost:8000
+- **Frontend**: http://localhost:8080 (production) or http://localhost:5173 (dev)
+- **API Docs**: http://localhost:8000/docs
+
+### Building Individual Containers
+
+Backend:
+```bash
+cd backend
+docker build -t prayer-tracker-api .
+docker run -p 8000:8000 prayer-tracker-api
+```
+
+Frontend:
+```bash
+cd frontend
+docker build --build-arg VITE_API_URL=http://localhost:8000 -t prayer-tracker-frontend .
+docker run -p 8080:8080 prayer-tracker-frontend
+```
+
+## Google Cloud Run Deployment
+
+Deploy to Google Cloud Run with a single command:
+
+```bash
+# Set your project ID
+export GCP_PROJECT_ID="your-project-id"
+export GCP_REGION="us-central1"
+
+# Deploy both backend and frontend
+./deploy-all.sh
+```
+
+Or deploy individually:
+
+```bash
+# Deploy backend only
+./deploy-backend.sh
+
+# Deploy frontend (requires backend URL)
+export BACKEND_URL="https://your-backend-url.run.app"
+./deploy-frontend.sh
+```
+
+For detailed deployment instructions, database setup, CI/CD configuration, and troubleshooting, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## API Endpoints
 

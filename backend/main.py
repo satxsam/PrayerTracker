@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 import uvicorn
+import os
 
 import models
 import schemas
@@ -19,9 +20,11 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Get allowed origins from environment or use defaults
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vite default port
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,6 +35,12 @@ app.add_middleware(
 def root():
     """Root endpoint"""
     return {"message": "Prayer Tracker API", "version": "1.0.0"}
+
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for Cloud Run and container orchestration"""
+    return {"status": "healthy"}
 
 
 @app.get("/api/prayers", response_model=List[schemas.PrayerRequest])
@@ -84,4 +93,6 @@ def delete_prayer(prayer_id: int, db: Session = Depends(get_db)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # Get port from environment variable (Cloud Run compatibility)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

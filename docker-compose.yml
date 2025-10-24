@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://prayer_user:prayer_pass@db:5432/prayer_tracker
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:8080
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+    command: uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=prayer_user
+      - POSTGRES_PASSWORD=prayer_pass
+      - POSTGRES_DB=prayer_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prayer_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
