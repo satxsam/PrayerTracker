@@ -26,6 +26,24 @@ Access at:
 - Backend: http://localhost:8000
 - PostgreSQL: localhost:5432
 
+### Synology NAS (SQLite on NAS)
+
+```bash
+# Configure your NAS IP first
+cp .env.synology.example .env
+# Edit .env with your NAS IP address
+
+# Deploy to Synology
+docker-compose -f docker-compose.synology.yml up -d
+```
+
+Access at:
+- Frontend: http://YOUR_NAS_IP:8080
+- Backend: http://YOUR_NAS_IP:8000
+- Database: Stored at /volume1/docker/prayer-tracker/data/
+
+See [SYNOLOGY-DEPLOYMENT.md](SYNOLOGY-DEPLOYMENT.md) for detailed instructions.
+
 ## Common Tasks
 
 ### View logs
@@ -108,7 +126,14 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:8080
 VITE_API_URL=http://localhost:8000
 ```
 
-## Next Steps
+## Platform-Specific Guides
 
-- See [DEPLOYMENT.md](DEPLOYMENT.md) for Cloud Run deployment
-- See [README.md](README.md) for local development without Docker
+- **Synology NAS**: See [SYNOLOGY-DEPLOYMENT.md](SYNOLOGY-DEPLOYMENT.md)
+- **Google Cloud Run**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Local Development**: See [README.md](README.md)
+
+## Database Locations
+
+- **Development**: `backend/prayer_tracker.db` (in container)
+- **Production**: PostgreSQL in Docker volume
+- **Synology**: `/volume1/docker/prayer-tracker/data/prayer_tracker.db` (on NAS)

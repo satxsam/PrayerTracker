@@ -168,6 +168,28 @@ docker build --build-arg VITE_API_URL=http://localhost:8000 -t prayer-tracker-fr
 docker run -p 8080:8080 prayer-tracker-frontend
 ```
 
+## Synology NAS Deployment
+
+Deploy to your Synology NAS with persistent SQLite storage:
+
+```bash
+# Copy .env.synology.example to .env and configure your NAS IP
+cp .env.synology.example .env
+
+# Deploy using Docker Compose
+docker-compose -f docker-compose.synology.yml up -d
+```
+
+Features:
+- **Persistent SQLite database** stored on your NAS
+- **Automatic restart** on NAS reboot
+- **Low resource usage** (perfect for home NAS)
+- **Easy backup** with Synology Hyper Backup
+
+The database file will be stored at `/volume1/docker/prayer-tracker/data/prayer_tracker.db` on your NAS.
+
+For detailed Synology deployment instructions, including Container Manager UI setup, see [SYNOLOGY-DEPLOYMENT.md](SYNOLOGY-DEPLOYMENT.md).
+
 ## Google Cloud Run Deployment
 
 Deploy to Google Cloud Run with a single command:

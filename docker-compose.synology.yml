@@ -1,0 +1,53 @@
+version: '3.8'
+
+# Docker Compose configuration for Synology NAS
+# Uses SQLite with persistent storage mounted from NAS
+
+services:
+  backend:
+    image: prayer-tracker-api:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prayer-tracker-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # SQLite database stored on NAS volume
+      - DATABASE_URL=sqlite:////data/prayer_tracker.db
+      # Allow frontend to connect
+      - CORS_ORIGINS=http://localhost:8080,http://${NAS_IP}:8080,http://${NAS_HOSTNAME}:8080
+    volumes:
+      # Mount NAS directory for persistent SQLite database
+      # Change '/volume1/docker/prayer-tracker/data' to match your NAS path
+      - /volume1/docker/prayer-tracker/data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: prayer-tracker-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Update this to your NAS IP or hostname
+        - VITE_API_URL=http://${NAS_IP:-localhost}:8000
+    container_name: prayer-tracker-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# No separate volumes section needed - using direct NAS path mounts
